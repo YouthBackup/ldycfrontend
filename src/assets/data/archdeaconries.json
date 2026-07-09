@@ -1,0 +1,223 @@
+[
+  {
+    "archdeaconry": "Cathedral",
+    "parishes": ["Cathedral Church of Christ"]
+  },
+  {
+    "archdeaconry": "Abijo Archdeaconry",
+    "parishes": [
+      "Church of Transformation, Abijo",
+      "Church of Divine Favour, Sangotedo",
+      "St. James’ Church, Awoyaya",
+      "Agape Community Church, Labora",
+      "Salvation Church, Kaiyetoro",
+      "Church of Redeemer, Awoyaya",
+      "Church on the Rock, Gbetu",
+      "Church of Living Water, Ibeju",
+      "St. James’ Church, Ibeju",
+      "St. Jude’s Church, Iba Oloja",
+      "Church on Mount Sinai, Oke Ogun"
+    ]
+  },
+  {
+    "archdeaconry": "Apapa Archdeaconry",
+    "parishes": [
+      "Christ the King Church, Ajegunle",
+      "St. James' Church, Amukoko",
+      "St. John's Church, Araromi",
+      "St. Peter's Church, Olodi-Apapa",
+      "St. Andrew's Church, Olodi",
+      "All Saint's Church, J.M.J Qtrs",
+      "St. Peter's Church, Araromi",
+      "Holy Trinity Church, Aroworade",
+      "St. John's Church, Alaba Oro",
+      "St. David's Church, Awodi-Ora",
+      "Christ Church, Trinity",
+      "Delight Church, Apapa"
+    ]
+  },
+  {
+    "archdeaconry": "Badore Missionary Archdeaconry",
+    "parishes": ["Church of Ascension, Badore", "Anglican Church, Unity Estate"]
+  },
+  {
+    "archdeaconry": "Epe Archdeaconry",
+    "parishes": [
+      "St. Michael's Church, Epe",
+      "St. Paul's Church, Igbooye",
+      "Holy Trinity Church, Poka-Noforija",
+      "Holy Trinity Church, Erasco",
+      "St. Peter's Church, Agodo",
+      "St. David's Church, Ilara",
+      "Christ Anglican Church, Iraye-Oke",
+      "St. Mark's Church, Odo-Egiri",
+      "St. Gabriel's Church, Ajegbende",
+      "Church of the Light, Odomola",
+      "Church of the Advent, Edudu-Iraye",
+      "St. Stephen's Church, Ijih",
+      "Our Saviour's Church, Eregbe",
+      "Church of the Living Stone, Itun Oloja"
+    ]
+  },
+  {
+    "archdeaconry": "Eti-Okun Archdeaconry",
+    "parishes": [
+      "St. Peters Church, Magbon Alade",
+      "St. Paul’s Church, Idotun",
+      "St. David’s Church, Lekki Osoroko",
+      "St. David’s Church, Idaso",
+      "St. Paul’s Church, Museyo",
+      "St. Michael’s Church, Ise",
+      "Church of Resurrection, Orimedu",
+      "Christ Church, Akodo",
+      "St. David’s Church, Lepia",
+      "St. David’s Church, Itamarun",
+      "St. James’ Church, Owode",
+      "St. Matthew Church, Tiye",
+      "St. Paul's Church, Debojo",
+      "⁠Hausa Community"
+    ]
+  },
+  {
+    "archdeaconry": "Eti-Osa Archdeaconry",
+    "parishes": [
+      "Holy Trinity Church, Ebute-Ero",
+      "St. John's Church, Aroloya",
+      "King's Church, Enu-Owa",
+      "St. Andrew's Church, Okepopo",
+      "St. Philip's Church, Omididun"
+    ]
+  },
+  {
+    "archdeaconry": "Ifesowapo Archdeaconry",
+    "parishes": [
+      "Rev. Braithwaite Memorial Church, Epe",
+      "All Saints’ Church, Epe",
+      "Our Saviour’s Church, Odoragunsin",
+      "St. John’s Church, Odoagboju",
+      "All Saint’s Church, Okemagba",
+      "New Jerusalem Church, Temu",
+      "St. James’ Church, Kula Nla, Odomola"
+    ]
+  },
+  {
+    "archdeaconry": "Igboologun Missionary Archdeaconry",
+    "parishes": [
+      "Immanuel Church, Igboologun",
+      "Our Saviour’s Church, Itun Agan",
+      "St. Paul’s Church, Ifako Tomaro (Nanti Village)",
+      "Church of Divine Restoration, Sagbokodji"
+    ]
+  },
+  {
+    "archdeaconry": "Ikoyi Archdeaconry",
+    "parishes": [
+      "Our Saviour’s Church, TBS",
+      "Church of the Nativity, Parkview",
+      "St. John's Church, Falomo",
+      "Epiphany of Our Messiah Church, Tarkwa-Bay",
+      "First Fruit Church, Dolphin Estate"
+    ]
+  },
+  {
+    "archdeaconry": "Kirikiri Archdeaconry",
+    "parishes": [
+      "St. Paul’s Church, Kirikiri",
+      "St. Barnabas’ Church, Awodi-Ora",
+      "St. Philip’s Church, Sari Iganmu",
+      "St. Paul’s Church, Maza Maza",
+      "St. John’s Church, Brass",
+      "St. Paul’s Church, Ojoku",
+      "St. Joseph’s Church, Wilmer",
+      "All Saints’ Church, Old Ojo Road",
+      "St. Andrew’s Church, Amukoko",
+      "Church of the Advent, Jesus Village"
+    ]
+  },
+  {
+    "archdeaconry": "Lagos Archdeaconry",
+    "parishes": [
+      "St. Paul's Church, Breadfruit",
+      "St. Peter's Church, Faji",
+      "St. David's Church, Lafiaji",
+      "Bishop Tugwell Memorial Church, Shete-Olu",
+      "Church of Transfiguration, Okesuna"
+    ]
+  },
+  {
+    "archdeaconry": "Lagoon Archdeaconry",
+    "parishes": [
+      "Church on the Peninsula, Royal Garden Estate",
+      "Church of Divine Providence, Adeba",
+      "Arch. E. A. Ademowo Church, Bogije",
+      "St. Peter’s Church, Sangotedo",
+      "Church of Praise, Eputu",
+      "Church of the Living Faith, Lakowe",
+      "St. David’s Church, Eko Akete",
+      "St. Andrew’s Church, Aiyeteju",
+      "Charis Church, Tedo",
+      "King of Kings Church, Alatunse",
+      "Church of Divine Benediction, Onosa",
+      "Chapel of Light, Losoro",
+      "New Life Church, Lagasa",
+      "Church of the Beautiful Gate, VGC",
+      "Church of the Good News, Imalete Alafia"
+    ]
+  },
+  {
+    "archdeaconry": "Lekki Archdeaconry",
+    "parishes": [
+      "All Soul’s Church, Lekki",
+      "New Era Church, Lekki",
+      "Church of Praise, Lekki",
+      "Church of Epiphany, Gbara",
+      "Saviour’s Family Church, Oniru",
+      "St. John The Evangelist Anglican Church Lekki"
+    ]
+  },
+  {
+    "archdeaconry": "Marine Beach Archdeaconry",
+    "parishes": [
+      "The Good Shepherd Church, Marine Beach",
+      "Immanuel Church, Mobil Road",
+      "St. Andrew’s Church, Aiyetoro",
+      "St. Andrew’s Church, GRA",
+      "New Life Church, Ijora-Badia",
+      "St. Michael’s Church, Ogbonwankwo"
+    ]
+  },
+  {
+    "archdeaconry": "New Era Archdeaconry",
+    "parishes": [
+      "Holy Trinity Church, Ado",
+      "St. Luke Church, Langbasa",
+      "New Covenant Church, Oke Ira Nla"
+    ]
+  },
+  {
+    "archdeaconry": "Peninsula Archdeaconry",
+    "parishes": [
+      "St. Peter’s Church, Ikota",
+      "Church of Pentecost, Ajah",
+      "Church of Redemption, Lekki",
+      "Samuel Ajayi Crowther Church, Mopo",
+      "Church of Advent, Igbo Efon",
+      "His Grace Church, Chevron Drive Lekki",
+      "St. James Church, Ogombo",
+      "Anglican Church of the New Life Okun Ajah"
+    ]
+  },
+  {
+    "archdeaconry": "Victoria Island Archdeaconry",
+    "parishes": [
+      "Church of the Resurrection, VI",
+      "Church of All Nations, VI",
+      "St. Johns Church, VI",
+      "Church of the Living Souls, Oniru Estate"
+    ]
+  },
+  {
+    "archdeaconry": "Other Denominations",
+    "parishes": []
+  }
+]

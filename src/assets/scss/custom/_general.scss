@@ -1,0 +1,64 @@
+/* // _helper.scss */
+
+/*********************************/
+/*             Helper            */
+/*===============================*/
+
+body {
+    @apply font-inter text-base text-black dark:text-white;
+}
+
+p {
+    @apply leading-relaxed;
+}
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    @apply font-poppins leading-normal;
+}
+
+::selection {
+    @apply bg-slate-900 text-white;
+}
+
+/* Scroll reveal animations */
+[data-reveal] {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+}
+[data-reveal="left"] {
+    transform: translateX(-32px);
+}
+[data-reveal="right"] {
+    transform: translateX(32px);
+}
+[data-reveal="scale"] {
+    transform: scale(0.95);
+    opacity: 0;
+}
+[data-reveal].revealed {
+    opacity: 1;
+    transform: none;
+}
+.delay-100 { transition-delay: 100ms; }
+.delay-200 { transition-delay: 200ms; }
+.delay-300 { transition-delay: 300ms; }
+.delay-400 { transition-delay: 400ms; }
+.delay-500 { transition-delay: 500ms; }
+
+/* Hero slide text animation */
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.slide-animate {
+    animation: fadeSlideUp 0.8s ease forwards;
+}
+.slide-animate-delay {
+    animation: fadeSlideUp 0.8s ease 0.2s forwards;
+    opacity: 0;
+}
+.slide-animate-delay-2 {
+    animation: fadeSlideUp 0.8s ease 0.4s forwards;
+    opacity: 0;
+}
