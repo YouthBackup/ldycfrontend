@@ -9,68 +9,84 @@
           <div
             class="relative overflow-hidden rounded-md bg-white dark:bg-slate-900 shadow dark:shadow-gray-800"
           >
-            <div class="px-6 py-8 bg-emerald-600 text-center">
+            <!-- Loading -->
+            <div
+              v-if="status === 'loading'"
+              class="px-6 py-8 bg-ldyc-blue text-center"
+            >
+              <div class="loader mx-auto mb-4" />
+              <h5 class="text-white text-xl tracking-wide uppercase font-semibold mt-2">
+                Verifying your payment...
+              </h5>
+            </div>
+
+            <!-- Success -->
+            <div
+              v-else-if="status === 'success'"
+              class="px-6 py-8 bg-emerald-600 text-center"
+            >
               <i class="mdi mdi-check-circle text-white text-6xl" />
-              <h5
-                class="text-white text-xl tracking-wide uppercase font-semibold mt-2"
-              >
+              <h5 class="text-white text-xl tracking-wide uppercase font-semibold mt-2">
                 Registration Successful
               </h5>
             </div>
 
+            <!-- Failed -->
+            <div
+              v-else
+              class="px-6 py-8 bg-red-600 text-center"
+            >
+              <i class="mdi mdi-close-circle text-white text-6xl" />
+              <h5 class="text-white text-xl tracking-wide uppercase font-semibold mt-2">
+                Payment Failed
+              </h5>
+            </div>
+
             <div class="px-6 py-12">
-              <p
-                class="text-black font-semibold text-xl dark:text-white text-center"
-              >
-                Congratulations! 🎉
-              </p>
-
-              <div class="text-black mt-4">
-                <p class="text-center">
-                  Thank you for registering for the 2025 Youth Conference!
-                  <br>To complete your registration, please make a payment
-                  of<span class="font-semibold"> ₦10,000</span> to the account
-                  below:
+              <template v-if="status === 'success'">
+                <p class="text-black font-semibold text-xl dark:text-white text-center">
+                  Congratulations! 🎉
                 </p>
-                <ul class="list-none my-4 text-center">
-                  <li>
-                    <span class="font-semibold">Bank:</span> First City Monument
-                    Bank (FCMB)
-                  </li>
-                  <li>
-                    <span class="font-semibold">Account Number:</span>
-                    0696-4260-13
-                  </li>
-                  <li>
-                    <span class="font-semibold">Account Name:</span> Lagos
-                    Diocesan Youth Directorate
-                  </li>
-                </ul>
 
-                <p class="font-semibold">
-                  Important Instructions:
+                <div class="text-black mt-4">
+                  <p class="text-center">
+                    Thank you for registering for LDYC 2026! Your payment was
+                    successful. A confirmation email with your registration
+                    details has been sent to each participant's email address.
+                  </p>
+
+                  <div class="mt-6 flex justify-center mb-2">
+                    <router-link
+                      to="/"
+                      class="py-2 px-5 inline-block tracking-wide align-middle duration-500 text-base text-center bg-[#0592d8] text-white rounded-md"
+                    >
+                      Continue
+                    </router-link>
+                  </div>
+                </div>
+              </template>
+
+              <template v-else-if="status === 'failed'">
+                <p class="text-black font-semibold text-xl dark:text-white text-center">
+                  {{ errorMessage }}
                 </p>
-                <ol class="">
-                  <li>Use your full name as the transaction narration.</li>
-                  <li>
-                    Send your payment receipt along with your full name and
-                    email address to this number: 09032762664.
-                  </li>
-                  <li>
-                    Once your payment is confirmed, you will receive a
-                    confirmation email.
-                  </li>
-                </ol>
 
-                <div class="mt-6 flex justify-center mb-2">
-                  <router-link
-                    to="/"
+                <div class="text-black dark:text-white mt-6 flex flex-col items-center gap-3">
+                  <button
+                    v-if="checkoutInfo?.authorizationUrl"
                     class="py-2 px-5 inline-block tracking-wide align-middle duration-500 text-base text-center bg-[#0592d8] text-white rounded-md"
+                    @click="retryPayment"
                   >
-                    Continue
+                    Retry Payment
+                  </button>
+                  <router-link
+                    to="/register"
+                    class="text-sm underline text-slate-500 dark:text-slate-300"
+                  >
+                    Start Over
                   </router-link>
                 </div>
-              </div>
+              </template>
 
               <div
                 class="text-center p-4 pb-0 border-t border-gray-100 dark:border-gray-700"
@@ -92,21 +108,56 @@
   <!-- End Hero -->
 </template>
 
-<script>
-export default {
-  name: "ErrorPage",
-  components: {},
-  data() {
-    return {
-      date: new Date().getFullYear(),
-    };
-  },
-  computed: {
-    formattedYear() {
-      return this.date.toString().slice(-2); // Get last 2 digits of year
-    },
-  },
+<script setup>
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useStore } from "vuex";
+import { getCheckout, clearCheckout } from "@/utils/checkoutStorage";
+
+const route = useRoute();
+const router = useRouter();
+const store = useStore();
+
+const date = new Date().getFullYear();
+const formattedYear = computed(() => date.toString().slice(-2));
+
+const status = ref("loading");
+const errorMessage = ref("");
+const checkoutInfo = ref(getCheckout());
+
+const retryPayment = () => {
+  if (checkoutInfo.value?.authorizationUrl) {
+    window.location.href = checkoutInfo.value.authorizationUrl;
+  } else {
+    router.push("/register");
+  }
 };
+
+onMounted(async () => {
+  const reference =
+    route.query.reference || route.query.trxref || checkoutInfo.value?.reference;
+
+  if (!reference) {
+    status.value = "failed";
+    errorMessage.value = "No payment reference found. Please try registering again.";
+    return;
+  }
+
+  try {
+    const response = await store.dispatch("verifyPayment", reference);
+    if (response.data?.success === false) {
+      throw new Error(response.data?.message || "Payment verification failed.");
+    }
+    status.value = "success";
+    clearCheckout();
+  } catch (error) {
+    status.value = "failed";
+    errorMessage.value =
+      error.response?.data?.message ||
+      error.message ||
+      "Payment verification failed or is still pending.";
+  }
+});
 </script>
 
 <style scoped>

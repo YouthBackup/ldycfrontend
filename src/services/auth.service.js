@@ -23,7 +23,7 @@ class GlobalService {
 
   async getAllParticipants(payload) {
     return await axiosInstance.get(
-      `/api/participants/?page=${payload.page}&userType=${payload.userType}&archdeaconry=${payload.archdeaconry}&status=${payload.status}`
+      `/api/participants/?page=${payload.page}&userType=${payload.userType}&archdeaconry=${payload.archdeaconry}&status=${payload.status}`,
     );
   }
 
@@ -36,19 +36,24 @@ class GlobalService {
   }
 
   async updateParticipantStatus(payload) {
-    return await axiosInstance.patch(`/api/participants/${payload.id}/status`, {status: payload.status});
+    return await axiosInstance.patch(`/api/participants/${payload.id}/status`, {
+      status: payload.status,
+    });
   }
 
-   async deleteParticipant(id) {
+  async deleteParticipant(id) {
     return await axiosInstance.delete(`/api/participants/${id}`);
   }
 
   async initializePayment(payload) {
-    return await axiosInstance.post("/api/flutterwave/initialize", payload);
+    const res = await axiosInstance.post("/api/paystack/initialize", payload);
+    console.log(res.data.data);
+
+    return res.data.data;
   }
 
   async verifyPayment(reference) {
-    return await axiosInstance.get(`/api/flutterwave/verify/${reference}`);
+    return await axiosInstance.get(`/api/paystack/verify/${reference}`);
   }
 }
 

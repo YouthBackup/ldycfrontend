@@ -4,40 +4,44 @@
     class="md:h-screen py-36 flex items-center relative overflow-hidden zoom-image"
   >
     <div
-      class="absolute inset-0 image-wrap z-1 bg-[url('../../assets/images/bg/6.jpg')] bg-no-repeat bg-center bg-cover"
+      class="absolute inset-0 image-wrap z-1 bg-[url('../../assets/images/bg/youths.jpg')] bg-no-repeat bg-center bg-cover"
     />
     <div
       id="particles-snow"
-      class="absolute inset-0 bg-gradient-to-b from-transparent to-black z-2"
+      class="absolute inset-0 bg-gradient-to-br from-ldyc-blue/90 via-black/70 to-liturgical-purple/90 z-2"
     />
     <div class="container relative z-3">
       <div class="flex justify-center">
         <div
-          class="max-w-[400px] w-full m-auto p-6 bg-white dark:bg-slate-900 shadow-md dark:shadow-gray-700 rounded-md"
+          class="max-w-[400px] w-full m-auto p-8 bg-white dark:bg-slate-900 shadow-2xl dark:shadow-gray-700 rounded-2xl border-t-4 border-ldyc-blue"
         >
           <router-link to="/">
-            <!-- <img src="../../../assets/images/logo-icon.png" class="mx-auto" alt=""> -->
             <img
               src="../../../assets/images/doylogo.png"
               class="mx-auto w-20"
               alt=""
             >
           </router-link>
-          <h5 class="my-6 text-xl font-semibold">
-            Login
+
+          <p class="mt-6 text-center text-ldyc-blue font-semibold uppercase tracking-[3px] text-xs">
+            Members Portal
+          </p>
+          <h5 class="mb-6 text-center text-2xl font-poppins font-bold text-black dark:text-white">
+            Welcome Back
           </h5>
+
           <form class="text-start">
             <div class="grid grid-cols-1">
               <div class="mb-4">
                 <label
-                  class="font-semibold"
+                  class="font-semibold text-sm text-slate-600 dark:text-slate-300"
                   for="LoginEmail"
                 >Email Address:</label>
                 <input
                   id="LoginEmail"
                   v-model="userDetails.email"
                   type="email"
-                  class="mt-3 w-full py-2 px-3 h-10 bg-transparent dark:bg-slate-900 dark:text-slate-200 rounded outline-none border border-gray-100 dark:border-gray-800 focus:ring-0"
+                  class="mt-2 w-full py-2 px-3 h-10 bg-transparent dark:bg-slate-800 dark:text-slate-200 rounded-lg outline-none border border-gray-200 dark:border-gray-700 focus:border-ldyc-blue focus:ring-2 focus:ring-ldyc-blue/20"
                   placeholder="name@example.com"
                   required
                 >
@@ -45,36 +49,67 @@
 
               <div class="mb-4">
                 <label
-                  class="font-semibold"
+                  class="font-semibold text-sm text-slate-600 dark:text-slate-300"
                   for="LoginPassword"
                 >Password:</label>
-                <input
-                  id="LoginPassword"
-                  v-model="userDetails.password"
-                  type="password"
-                  class="mt-3 w-full py-2 px-3 h-10 bg-transparent dark:bg-slate-900 dark:text-slate-200 rounded outline-none border border-gray-100 dark:border-gray-800 focus:ring-0"
-                  placeholder="Password:"
-                  required
-                >
+                <div class="relative mt-2">
+                  <input
+                    id="LoginPassword"
+                    v-model="userDetails.password"
+                    :type="showPassword ? 'text' : 'password'"
+                    class="w-full py-2 px-3 pr-10 h-10 bg-transparent dark:bg-slate-800 dark:text-slate-200 rounded-lg outline-none border border-gray-200 dark:border-gray-700 focus:border-ldyc-blue focus:ring-2 focus:ring-ldyc-blue/20"
+                    placeholder="Password:"
+                    required
+                  >
+                  <button
+                    type="button"
+                    tabindex="-1"
+                    class="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-ldyc-blue transition-colors"
+                    :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                    @click="showPassword = !showPassword"
+                  >
+                    <svg
+                      v-if="showPassword"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line
+                      x1="1"
+                      y1="1"
+                      x2="23"
+                      y2="23"
+                    /></svg>
+                    <svg
+                      v-else
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle
+                      cx="12"
+                      cy="12"
+                      r="3"
+                    /></svg>
+                  </button>
+                </div>
               </div>
 
-              <div class="flex justify-between mb-4">
-                <!-- <div class="flex items-center mb-0">
-                  <input
-                    id="RememberMe"
-                    class="form-checkbox rounded border-gray-100 dark:border-gray-800 text-red-500 focus:border-red-300 focus:ring focus:ring-offset-0 focus:ring-red-500/20 focus:ring-opacity-50 me-2"
-                    type="checkbox"
-                    value=""
-                  >
-                  <label
-                    class="form-checkbox-label text-slate-400"
-                    for="RememberMe"
-                  >Remember me</label>
-                </div> -->
-                <p class="text-slate-400 mb-0">
+              <div class="flex justify-end mb-6">
+                <p class="mb-0">
                   <router-link
                     to="/forgot-password"
-                    class="text-slate-400"
+                    class="text-ldyc-blue text-sm font-semibold hover:underline"
                   >
                     Forgot password?
                   </router-link>
@@ -84,21 +119,12 @@
               <div class="mb-4">
                 <input
                   type="submit"
-                  class="py-2 px-5 inline-block tracking-wide align-middle duration-500 text-base text-center bg-red-500 text-white rounded-md w-full"
-                  value="Login / Sign in"
+                  class="py-3 px-5 inline-block tracking-wide align-middle duration-300 text-base text-center font-semibold bg-gradient-to-r from-ldyc-blue to-liturgical-purple hover:opacity-90 text-white rounded-full w-full shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  :value="isLoading ? 'Logging in...' : 'Login / Sign in'"
+                  :disabled="isLoading"
                   @click.prevent="login"
                 >
               </div>
-
-              <!-- <div class="text-center">
-                <span class="text-slate-400 me-2">Don't have an account ?</span>
-                <router-link
-                  to="/signup"
-                  class="text-black dark:text-white font-bold inline-block"
-                >
-                  Sign Up
-                </router-link>
-              </div> -->
             </div>
           </form>
         </div>
@@ -112,19 +138,38 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useStore } from "vuex";
-// import feather from "feather-icons";
 import switcher from "@/components/switcher.vue";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toast-notification";
+import { isValidEmail } from "@/utils/validators";
 
 const store = useStore();
 const router = useRouter();
 const toast = useToast();
 
 const userDetails = ref({ email: "", password: "" });
+const isLoading = ref(false);
+const showPassword = ref(false);
 
 const login = async () => {
+  if (!userDetails.value.email || !isValidEmail(userDetails.value.email)) {
+    toast.error("Please enter a valid email address.", {
+      position: "top-right",
+      duration: 5000,
+    });
+    return;
+  }
+
+  if (!userDetails.value.password) {
+    toast.error("Please enter your password.", {
+      position: "top-right",
+      duration: 5000,
+    });
+    return;
+  }
+
   try {
+    isLoading.value = true;
     const res = await store.dispatch("login", userDetails.value);
 
     if (res.data?.success) {
@@ -162,6 +207,8 @@ const login = async () => {
         duration: 5000,
       }
     );
+  } finally {
+    isLoading.value = false;
   }
 };
 
