@@ -148,8 +148,8 @@
 
             <div class="mt-5">
               <a
-                v-if="item.status === '+234 803 324 5727'"
-                href="tel:+234 803 324 5727"
+                v-if="item.status === '+234 802 364 8700'"
+                href="tel:+234 802 364 8700"
                 class="text-red-500 font-medium"
               >{{ item.status }}</a>
               <a
@@ -244,7 +244,7 @@ export default {
           icon: "phone",
           name: "Phone",
           desc: "You can reach the Director of the Directorate using the number below",
-          status: "+234 803 324 5727",
+          status: "+234 802 364 8700",
         },
         {
           icon: "mail",
