@@ -103,9 +103,9 @@
                     />
                     <div class="">
                       <a
-                        href="tel:+234 803 324 5727"
+                        href="tel:+234 802 364 8700"
                         class="text-slate-300 hover:text-slate-400 duration-500 ease-in-out"
-                      >+234 803 324 5727 Director</a>
+                      >+234 802 364 8700 Director</a>
                     </div>
                   </div>
                 </div>
