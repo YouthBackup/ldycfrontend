@@ -34,7 +34,7 @@
                 </h2>
                 <p class="text-gray-500 mb-6 leading-relaxed">
                   We're sorry, but registration for the
-                  <strong>LDYC25</strong> has closed. Keep an eye out for future
+                  <strong>LDYC26</strong> has closed. Keep an eye out for future
                   opportunities!
                 </p>
                 <button
