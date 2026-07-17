@@ -568,7 +568,7 @@ const isLoading = ref(false);
 const archdeaconries = ref([]);
 const showModal = ref(false);
 
-const maxDob = computed(() => new Date(2009, 11, 31)); // December 31, 2009
+const maxDob = computed(() => new Date(2008, 12, 31)); // December 31, 2008
 
 const requiredFields = [
   "userType",
