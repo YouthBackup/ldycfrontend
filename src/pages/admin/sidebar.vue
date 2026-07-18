@@ -15,7 +15,7 @@
           src="../../assets/images/doylogo.png"
           class="w-14 h-14"
           alt="Logo"
-        >
+        />
         <span>LDYC Admin Dashboard</span>
       </h2>
       <button
@@ -81,7 +81,7 @@
     </nav>
 
     <!-- Divider -->
-    <hr class="border-gray-700 mx-4 my-6">
+    <hr class="border-gray-700 mx-4 my-6" />
 
     <!-- Logout Button -->
     <div class="absolute bottom-0 pb-8 px-4">
@@ -177,7 +177,7 @@ const user = computed(() => store.getters.getUserInfo);
 
 // Filter based on user role
 const menuItems = computed(() => {
-  if (user.value?.data?.name !== "Admin") {
+  if (user.value?.data?.userType !== "admin") {
     return allMenuItems.filter((item) => item.name === "Verify Participant");
   }
   return allMenuItems;

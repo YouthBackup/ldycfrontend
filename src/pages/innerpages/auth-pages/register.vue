@@ -283,6 +283,10 @@
                           format="dd/MM/yyyy"
                           :enable-time-picker="false"
                           :max-date="maxDob"
+                          :start-date="maxDob"
+                          :year-range="[1950, 2010]"
+                          :flow="['year', 'month', 'calendar']"
+                          menu-class-name="dob-picker-menu"
                           placeholder="Select DOB"
                           text-input
                         />
@@ -295,22 +299,92 @@
                         class="font-semibold text-black dark:text-white text-sm"
                         for="photo"
                       >Upload Photo:</label>
-                      <input
-                        id="photo"
-                        type="file"
-                        accept="image/*"
-                        class="mt-2 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-ldyc-blue/10 file:text-ldyc-blue hover:file:bg-ldyc-blue/20 transition-colors"
-                        @change="handleImageUpload"
-                      />
-                      <div
-                        v-if="currentParticipant._photoPreview"
-                        class="mt-4"
+
+                      <!-- Dropzone -->
+                      <label
+                        for="photo"
+                        class="group relative mt-2 flex w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-4 py-8 text-center transition-all duration-200"
+                        :class="photoError
+                          ? 'border-red-400 bg-red-50 dark:bg-red-500/10'
+                          : 'border-ldyc-blue/40 bg-ldyc-blue/5 hover:border-ldyc-blue hover:bg-ldyc-blue/10'"
                       >
-                        <img
-                          :src="currentParticipant._photoPreview"
-                          alt="Preview"
-                          class="w-32 h-32 object-cover rounded-full mx-auto shadow-md"
+                        <!-- Empty state -->
+                        <template v-if="!currentParticipant._photoPreview">
+                          <span
+                            class="flex h-14 w-14 items-center justify-center rounded-full bg-ldyc-blue/10 text-ldyc-blue transition-transform duration-200 group-hover:scale-110 group-hover:bg-ldyc-blue/20"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke-width="1.8"
+                              stroke="currentColor"
+                              class="h-6 w-6"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 7.5m0 0L7.5 12m4.5-4.5v12"
+                              />
+                            </svg>
+                          </span>
+                          <span class="text-sm font-semibold text-ldyc-blue">
+                            Click to upload a photo
+                          </span>
+                          <span class="text-xs text-slate-500 dark:text-slate-400">
+                            PNG or JPG · max 7MB
+                          </span>
+                        </template>
+
+                        <!-- Preview state -->
+                        <template v-else>
+                          <img
+                            :src="currentParticipant._photoPreview"
+                            alt="Preview"
+                            class="h-24 w-24 rounded-full object-cover shadow-md ring-2 ring-ldyc-blue/30"
+                          />
+                          <span
+                            class="max-w-full truncate text-xs font-medium text-slate-600 dark:text-slate-300"
+                          >
+                            {{ currentParticipant.photo?.name }}
+                          </span>
+                          <span class="text-xs font-semibold text-ldyc-blue">
+                            Click to change photo
+                          </span>
+                        </template>
+
+                        <input
+                          id="photo"
+                          ref="photoInput"
+                          type="file"
+                          accept="image/*"
+                          class="sr-only"
+                          @change="handleImageUpload"
                         />
+                      </label>
+
+                      <!-- Helper / error message -->
+                      <div class="mt-2 flex items-center justify-between gap-2">
+                        <p
+                          v-if="photoError"
+                          class="text-xs font-medium text-red-500"
+                        >
+                          {{ photoError }}
+                        </p>
+                        <p
+                          v-else
+                          class="text-xs text-slate-500 dark:text-slate-400"
+                        >
+                          Image size must not exceed 7MB.
+                        </p>
+                        <button
+                          v-if="currentParticipant._photoPreview"
+                          type="button"
+                          class="shrink-0 text-xs font-semibold text-red-500 hover:text-red-600"
+                          @click="clearPhoto"
+                        >
+                          Remove
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -422,7 +496,7 @@
             By registering for and participating in the Lagos Diocese Youth
             Conference, all attendees acknowledge and agree to abide by the
             rules and regulations set forth by the conference organizers. The
-            conference is strictly for individuals aged 18 and above, ensuring
+            conference is strictly for individuals aged 16 and above, ensuring
             that all participants are legally responsible for their actions.
           </p>
           <div>
@@ -560,15 +634,19 @@ const createParticipant = () => ({
   _availableParishes: [],
 });
 
+const MAX_PHOTO_SIZE = 7 * 1024 * 1024; // 7MB
+
 const payerEmail = ref("");
 const currentParticipant = ref(createParticipant());
 const participants = ref([]); // participants already added to the list
+const photoInput = ref(null); // native <input type="file"> element
+const photoError = ref("");
 const acceptTerms = ref(false);
 const isLoading = ref(false);
 const archdeaconries = ref([]);
 const showModal = ref(false);
 
-const maxDob = computed(() => new Date(2008, 12, 31)); // December 31, 2008
+const maxDob = computed(() => new Date(2010, 11, 31)); // December 31, 2010
 
 const requiredFields = [
   "userType",
@@ -644,6 +722,7 @@ const addParticipant = () => {
 
   participants.value.push(currentParticipant.value);
   currentParticipant.value = createParticipant();
+  resetPhotoInput(); // clear the native file input so the old filename doesn't linger
   toast.success("Participant added to list.", {
     position: "top-right",
     duration: 3000,
@@ -674,21 +753,40 @@ const handleCheckboxChange = () => {
   showModal.value = true;
 };
 
+const resetPhotoInput = () => {
+  photoError.value = "";
+  if (photoInput.value) photoInput.value.value = "";
+};
+
+const clearPhoto = () => {
+  currentParticipant.value.photo = null;
+  currentParticipant.value._photoPreview = "";
+  resetPhotoInput();
+};
+
 const handleImageUpload = (event) => {
   const file = event.target.files[0];
-  if (file) {
-    if (file.size > 10 * 1024 * 1024) {
-      alert("Image size must not exceed 10MB.");
-      event.target.value = ""; // Clear the file input to prevent selecting the image
-      return;
-    }
-    currentParticipant.value.photo = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      currentParticipant.value._photoPreview = e.target.result;
-    };
-    reader.readAsDataURL(file);
+  if (!file) return;
+
+  if (file.size > MAX_PHOTO_SIZE) {
+    photoError.value = "Image size must not exceed 7MB.";
+    toast.error("Image size must not exceed 7MB.", {
+      position: "top-right",
+      duration: 5000,
+    });
+    currentParticipant.value.photo = null;
+    currentParticipant.value._photoPreview = "";
+    event.target.value = ""; // clear so the same file can be re-selected after resizing
+    return;
   }
+
+  photoError.value = "";
+  currentParticipant.value.photo = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    currentParticipant.value._photoPreview = e.target.result;
+  };
+  reader.readAsDataURL(file);
 };
 
 const handleAcceptTerms = () => {
@@ -825,5 +923,25 @@ onMounted(() => {
   100% {
     transform: rotate(360deg);
   }
+}
+</style>
+
+<!-- Global: the date picker menu is teleported to <body>, so it can't be styled with scoped rules -->
+<style>
+.dob-picker-menu {
+  --dp-cell-size: 44px;
+  --dp-cell-padding: 8px;
+  --dp-common-padding: 14px;
+  --dp-menu-min-width: 320px;
+  --dp-font-size: 1rem;
+  --dp-month-year-row-height: 40px;
+  --dp-month-year-row-button-size: 36px;
+  --dp-button-height: 40px;
+}
+
+.dob-picker-menu .dp__overlay_cell,
+.dob-picker-menu .dp__overlay_cell_active {
+  padding: 12px 0;
+  font-size: 1rem;
 }
 </style>
