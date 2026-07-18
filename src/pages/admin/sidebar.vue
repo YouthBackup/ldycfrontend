@@ -135,10 +135,7 @@ const width = ref(window.innerWidth);
 const updateWidth = () => {
   width.value = window.innerWidth;
 };
-onMounted(() => {
-  console.log(user);
-  window.addEventListener("resize", updateWidth);
-});
+onMounted(() => window.addEventListener("resize", updateWidth));
 onUnmounted(() => window.removeEventListener("resize", updateWidth));
 
 // Auto-close sidebar on large screens
