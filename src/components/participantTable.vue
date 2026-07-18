@@ -298,12 +298,15 @@
 
 <script setup>
 import { ref, defineProps, computed, defineEmits, watch, onMounted } from "vue";
-import jsPDF from "jspdf";
-// import backgroundImage from "../assets/images/tag.png"; // TODO: tag.png is missing, needs replacement
-const backgroundImage = require('../assets/images/doylogo.png'); // placeholder
 import { useStore } from "vuex";
 import debounce from "lodash.debounce";
 import archdeaconryData from "@/assets/data/archdeaconries.json";
+import {
+  drawTag,
+  loadTagBackground,
+  newSingleDoc,
+  preparePhotos,
+} from "@/pages/admin/tagLayout";
 
 const store = useStore();
 
@@ -377,71 +380,19 @@ async function downloadPDF(user) {
   isGenerating.value = true;
   error.value = null;
 
-  const doc = new jsPDF({
-    orientation: "landscape",
-    unit: "mm",
-    format: [148, 105], // A6 size, adjust if your tags.pdf has different dimensions
-  });
-
   try {
-    // 1. Load background image
-    let bgBase64;
-    try {
-      const bgRes = await fetch(backgroundImage);
-      if (!bgRes.ok) throw new Error("Failed to load background image");
-      const bgBlob = await bgRes.blob();
-      bgBase64 = await blobToBase64(bgBlob);
-    } catch (bgError) {
-      throw new Error("Error loading background image: " + bgError.message);
-    }
+    const background = await loadTagBackground();
+    const { photos } = await preparePhotos([user]);
 
-    // 2. Load user passport photo
-    let passportBase64;
-    try {
-      const passportRes = await fetch(user.photoUrl);
-      if (!passportRes.ok) throw new Error("Failed to load passport photo");
-      const passportBlob = await passportRes.blob();
-      passportBase64 = await blobToBase64(passportBlob);
-    } catch (photoError) {
-      throw new Error("Error loading passport photo: " + photoError.message);
-    }
-
-    // const roundedPassportBase64 = await createRoundedImage(passportBase64, 43, 75, 6);
-    // 3. Draw the ID card layout
-    doc.addImage(bgBase64, "PNG", 0, 0, 148, 105); // Full background
-    //first number push right, second number push down, third number is width, last number is height
-    doc.addImage(passportBase64, "JPEG", 5, 47, 40, 50); // Passport photo (adjust position/size)
-
-    // 4. Dynamic user text
-    doc.setFont("helvetica", "medium");
-    doc.setFontSize(14); // Adjusted for A6 size
-    doc.setTextColor(0, 0, 0); // Black
-
-    // Adjust coordinates to match your template
-    doc.text(`${user.title || ""} ${user.firstName} ${user.surname}`, 68, 57);
-    doc.setFontSize(12);
-    doc.text(`${user.archdeaconry || "N/A"}`, 88, 76);
-    doc.text(`${user.parish || "N/A"}`, 68, 85);
-    doc.text(`${user.registrationCode || "N/A"}`, 95, 94);
-
-    // 5. Download
-    doc.save(`IDCard-${user.registrationCode || "unknown"}.pdf`);
-  } catch (error) {
-    error.value = error.message;
-    console.error("PDF generation failed:", error);
+    const doc = newSingleDoc();
+    drawTag(doc, user, background, photos.get(user._id));
+    doc.save(`IgniteTag-${user.registrationCode || user._id}.pdf`);
+  } catch (err) {
+    error.value = err.message;
+    console.error("PDF generation failed:", err);
   } finally {
     isGenerating.value = false;
   }
-}
-
-// Helper function to convert blob to base64
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
 }
 
 watch(searchInput, (newVal) => {

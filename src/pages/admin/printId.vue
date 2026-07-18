@@ -5,9 +5,7 @@
       <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
         Filters
       </h3>
-      <div
-        class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"
-      >
+      <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         <!-- User Type Filter -->
         <div>
           <label
@@ -81,14 +79,32 @@
           </select>
         </div>
       </div>
-      <!-- Bulk Download Button -->
-      <div class="mt-3 sm:mt-4 flex justify-end">
+    </div>
+
+    <!-- Selection tray: selection survives paging and filtering, so this is the
+         only place that shows the true batch size. -->
+    <div
+      v-if="selectedUsers.length"
+      class="bg-indigo-50 border border-indigo-200 rounded-lg p-3 sm:p-4 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+    >
+      <div class="text-sm text-indigo-900">
+        <span class="font-semibold">{{ selectedUsers.length }}</span>
+        {{ selectedUsers.length === 1 ? "tag" : "tags" }} selected
+        <span class="text-indigo-700">&middot; one per page</span>
+      </div>
+      <div class="flex flex-col xs:flex-row gap-2">
         <button
-          class="bg-indigo-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium w-full xs:w-auto"
-          :disabled="selectedUsers.length === 0"
-          @click="downloadBulkPDF"
+          class="px-3 py-2 rounded-md border border-indigo-300 text-indigo-700 hover:bg-indigo-100 text-sm font-medium transition-colors duration-200"
+          @click="clearSelection"
         >
-          Download Selected ID Cards ({{ selectedUsers.length }})
+          Clear selection
+        </button>
+        <button
+          class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium"
+          :disabled="isGenerating"
+          @click="downloadSelected"
+        >
+          Download {{ selectedUsers.length }} tags
         </button>
       </div>
     </div>
@@ -98,45 +114,31 @@
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th
-              class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-12"
-            >
+            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-12">
               <input
                 type="checkbox"
                 class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                :checked="isAllSelected"
-                aria-label="Select all participants"
-                @change="toggleSelectAll"
+                :checked="isPageSelected"
+                aria-label="Select all participants on this page"
+                @change="togglePageSelection"
               >
             </th>
-            <th
-              class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-            >
+            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Name
             </th>
-            <th
-              class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden lg:table-cell"
-            >
+            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden lg:table-cell">
               Email
             </th>
-            <th
-              class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden xl:table-cell"
-            >
+            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden xl:table-cell">
               Phone
             </th>
-            <th
-              class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden xl:table-cell"
-            >
+            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden xl:table-cell">
               Reg. Code
             </th>
-            <th
-              class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-            >
+            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Payment Status
             </th>
-            <th
-              class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-            >
+            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Actions
             </th>
           </tr>
@@ -146,44 +148,45 @@
             v-for="user in participants"
             :key="user._id"
             class="hover:bg-gray-50 transition-colors duration-150"
+            :class="{ 'bg-indigo-50': isSelected(user) }"
           >
             <td class="px-3 py-3 whitespace-nowrap w-12">
               <input
-                v-model="selectedUsers"
                 type="checkbox"
                 class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                :value="user"
+                :checked="isSelected(user)"
                 aria-label="Select participant"
+                @change="toggleSelection(user)"
               >
             </td>
             <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
               {{ user.title }} {{ user.firstName }} {{ user.surname }}
+              <span
+                v-if="!user.photoUrl"
+                class="ml-2 bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-xs font-medium"
+                title="This tag will print with an empty photo box"
+              >
+                No photo
+              </span>
             </td>
-            <td
-              class="px-3 py-3 whitespace-nowrap text-sm text-gray-600 hidden lg:table-cell"
-            >
+            <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-600 hidden lg:table-cell">
               {{ user.email }}
             </td>
-            <td
-              class="px-3 py-3 whitespace-nowrap text-sm text-gray-600 hidden xl:table-cell"
-            >
+            <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-600 hidden xl:table-cell">
               {{ user.phoneNumber }}
             </td>
-            <td
-              class="px-3 py-3 whitespace-nowrap text-sm text-gray-600 hidden xl:table-cell"
-            >
+            <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-600 hidden xl:table-cell">
               {{ user.registrationCode }}
             </td>
             <td class="px-3 py-3 whitespace-nowrap">
               <span
-                :class="{
-                  'bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium capitalize':
-                    user.paymentStatus.toLowerCase() === 'pending',
-                  'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium capitalize':
-                    user.paymentStatus.toLowerCase() !== 'pending',
-                }"
+                :class="
+                  isPending(user)
+                    ? 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium capitalize'
+                    : 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium capitalize'
+                "
               >
-                {{ user.paymentStatus }}
+                {{ user.paymentStatus || "Unknown" }}
               </span>
             </td>
             <td class="px-3 py-3 whitespace-nowrap">
@@ -191,8 +194,16 @@
                 class="bg-blue-600 text-white px-2 sm:px-4 py-1.5 rounded-md hover:bg-blue-700 text-sm font-medium transition-colors duration-200 w-full"
                 @click="openModal(user)"
               >
-                Print ID Card
+                Preview Tag
               </button>
+            </td>
+          </tr>
+          <tr v-if="!participants.length && !isLoading">
+            <td
+              colspan="7"
+              class="px-3 py-10 text-center text-sm text-gray-500"
+            >
+              No participants match these filters.
             </td>
           </tr>
         </tbody>
@@ -200,9 +211,7 @@
     </div>
 
     <!-- Pagination -->
-    <div
-      class="flex flex-col sm:flex-row justify-between items-center mt-6 p-3 bg-white shadow-lg rounded-lg"
-    >
+    <div class="flex flex-col sm:flex-row justify-between items-center mt-6 p-3 bg-white shadow-lg rounded-lg">
       <button
         class="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium w-full xs:w-auto mb-3 sm:mb-0"
         :disabled="currentPage === 1"
@@ -212,7 +221,6 @@
       </button>
 
       <div class="flex items-center gap-1 flex-wrap justify-center">
-        <!-- Show first page -->
         <button
           v-if="totalPages > 1"
           class="px-2 py-1 rounded-md text-sm font-medium transition-colors duration-200"
@@ -226,13 +234,11 @@
           1
         </button>
 
-        <!-- Show ellipsis if needed -->
         <span
           v-if="currentPage > 4"
           class="text-gray-500 text-sm"
         >...</span>
 
-        <!-- Show page numbers around current page -->
         <button
           v-for="page in pageRange"
           :key="page"
@@ -247,13 +253,11 @@
           {{ page }}
         </button>
 
-        <!-- Show ellipsis if needed -->
         <span
           v-if="currentPage < totalPages - 3"
           class="text-gray-500 text-sm"
         >...</span>
 
-        <!-- Show last page -->
         <button
           v-if="totalPages > 1 && totalPages !== currentPage"
           class="px-2 py-1 rounded-md text-sm font-medium transition-colors duration-200"
@@ -277,14 +281,14 @@
       </button>
     </div>
 
-    <!-- Loading Overlay -->
+    <!-- Loading / Generating Overlay -->
     <transition name="fade">
       <div
         v-if="isLoading || isGenerating"
-        class="flex items-center justify-center space-x-3 text-gray-600 fixed inset-0 bg-black bg-opacity-30"
+        class="fixed inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center gap-3 z-50"
       >
         <svg
-          class="animate-spin h-8 w-8 text-teal-500"
+          class="animate-spin h-8 w-8 text-teal-400"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -303,20 +307,16 @@
             d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
           />
         </svg>
-        <span class="text-lg font-medium text-white">
-          {{ isGenerating ? "Generating PDF..." : "Loading..." }}
-        </span>
+        <span class="text-lg font-medium text-white">{{ statusMessage }}</span>
       </div>
     </transition>
 
-    <!-- Modal -->
+    <!-- Preview Modal -->
     <div
       v-if="selectedUser"
-      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 transition-opacity duration-300 px-4 sm:px-0"
+      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50 transition-opacity duration-300 p-4 overflow-y-auto"
     >
-      <div
-        class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-md sm:max-w-lg relative transform transition-all duration-300 scale-100"
-      >
+      <div class="bg-white p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-3xl relative my-8">
         <button
           class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors duration-200"
           aria-label="Close modal"
@@ -337,50 +337,43 @@
             />
           </svg>
         </button>
-        <h3 class="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6">
-          ID Card Preview
+
+        <h3 class="text-lg sm:text-xl font-semibold text-gray-800 mb-1">
+          Tag Preview
         </h3>
+        <p class="text-xs text-gray-500 mb-4">
+          Rendered at the same measurements as the PDF, so what you see is what prints.
+        </p>
 
-        <div class="text-sm text-gray-600 space-y-2 sm:space-y-3 mb-6 sm:mb-8">
-          <p class="text-base sm:text-lg">
-            <strong class="font-medium text-gray-900">Name:</strong>
-            {{ selectedUser.title }} {{ selectedUser.firstName }}
-            {{ selectedUser.surname }}
-          </p>
-          <p class="text-base sm:text-lg">
-            <strong class="font-medium text-gray-900">Email:</strong>
-            {{ selectedUser.email }}
-          </p>
-          <p class="text-base sm:text-lg">
-            <strong class="font-medium text-gray-900">Phone:</strong>
-            {{ selectedUser.phoneNumber }}
-          </p>
-          <p class="text-base sm:text-lg">
-            <strong class="font-medium text-gray-900">Reg Code:</strong>
-            {{ selectedUser.registrationCode }}
-          </p>
-          <p class="text-base sm:text-lg">
-            <strong class="font-medium text-gray-900">Archdeaconry:</strong>
-            {{ selectedUser.archdeaconry }}
-          </p>
-          <p class="text-base sm:text-lg">
-            <strong class="font-medium text-gray-900">Parish:</strong>
-            {{ selectedUser.parish || "N/A" }}
-          </p>
-        </div>
+        <TagPreview
+          :user="selectedUser"
+          class="mb-4 shadow-md"
+        />
 
-        <div class="flex flex-col sm:flex-row items-center gap-3">
+        <p
+          v-if="!selectedUser.photoUrl"
+          class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 mb-4"
+        >
+          No passport photo on file &mdash; this tag will print with an empty photo box.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-stretch gap-3">
           <button
-            class="w-full bg-white text-black border border-blue-600 hover:text-white px-3 py-2 rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 font-medium"
-            @click="
-              router.push(`/admin/verify/participant/${selectedUser._id}`)
-            "
+            class="w-full bg-white text-gray-800 border border-blue-600 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-lg transition-colors duration-200 font-medium"
+            @click="router.push(`/admin/verify/participant/${selectedUser._id}`)"
           >
             View Participant
           </button>
           <button
-            class="w-full bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 font-medium"
-            @click="downloadPDF(selectedUser)"
+            class="w-full bg-white text-gray-800 border border-indigo-600 hover:bg-indigo-600 hover:text-white px-3 py-2 rounded-lg transition-colors duration-200 font-medium"
+            @click="toggleSelection(selectedUser)"
+          >
+            {{ isSelected(selectedUser) ? "Remove from batch" : "Add to batch" }}
+          </button>
+          <button
+            class="w-full bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors duration-200 font-medium"
+            :disabled="isGenerating"
+            @click="downloadSingle(selectedUser)"
           >
             Download PDF
           </button>
@@ -392,16 +385,23 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
-import jsPDF from "jspdf";
-// import backgroundImage from "../../assets/images/tag.png"; // TODO: tag.png is missing, needs replacement
-const backgroundImage = require('../../assets/images/doylogo.png'); // placeholder
+import { useRouter } from "vue-router";
+import { useToast } from "vue-toast-notification";
 import archdeaconryData from "@/assets/data/archdeaconries.json";
 import useParticipants from "./useParticipants";
-import { useRouter } from "vue-router";
+import TagPreview from "./TagPreview.vue";
+import {
+  buildBatch,
+  drawTag,
+  fullNameOf,
+  loadTagBackground,
+  newSingleDoc,
+  preparePhotos,
+} from "./tagLayout";
 
 const router = useRouter();
+const toast = useToast();
 
-// Composable for participants
 const {
   participants,
   isLoading,
@@ -412,30 +412,52 @@ const {
 } = useParticipants();
 
 const archdeaconries = ref([]);
-const hasMoreData = ref(true);
 const selectedUser = ref(null);
 const isGenerating = ref(false);
-const error = ref(null);
-const selectedUsers = ref([]);
+const statusMessage = ref("Loading...");
 
-// Computed property to check if all visible participants are selected
-const isAllSelected = computed(() => {
-  return (
-    participants.value.length > 0 &&
-    selectedUsers.value.length === participants.value.length
-  );
-});
+// Keyed by id so a selection outlives the page of results it was made on.
+const selection = ref({});
+const selectedUsers = computed(() => Object.values(selection.value));
 
-// Toggle select all participants
-function toggleSelectAll(event) {
-  if (event.target.checked) {
-    selectedUsers.value = [...participants.value];
-  } else {
-    selectedUsers.value = [];
-  }
+function isSelected(user) {
+  return Boolean(selection.value[user._id]);
 }
 
-// Pagination control
+function toggleSelection(user) {
+  const next = { ...selection.value };
+  if (next[user._id]) {
+    delete next[user._id];
+  } else {
+    next[user._id] = user;
+  }
+  selection.value = next;
+}
+
+const isPageSelected = computed(
+  () => participants.value.length > 0 && participants.value.every(isSelected)
+);
+
+function togglePageSelection() {
+  const next = { ...selection.value };
+  if (isPageSelected.value) {
+    participants.value.forEach((user) => delete next[user._id]);
+  } else {
+    participants.value.forEach((user) => {
+      next[user._id] = user;
+    });
+  }
+  selection.value = next;
+}
+
+function clearSelection() {
+  selection.value = {};
+}
+
+function isPending(user) {
+  return (user.paymentStatus || "").toLowerCase() === "pending";
+}
+
 function updatePage(page) {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
@@ -457,235 +479,88 @@ function openModal(user) {
   selectedUser.value = user;
 }
 
-// Helper function to resize and crop image like object-fit: cover
-async function resizeAndCropImage(imageUrl, targetWidth, targetHeight) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "Anonymous"; // Handle CORS if needed
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-
-      // Set canvas to target dimensions (in pixels, converted from mm)
-      const dpr = window.devicePixelRatio || 1; // Adjust for device pixel ratio
-      canvas.width = targetWidth * 3.78 * dpr; // Convert mm to pixels (1 mm ≈ 3.78 pixels at 96 DPI)
-      canvas.height = targetHeight * 3.78 * dpr;
-
-      // Calculate scaling to cover the target area
-      const imgAspect = img.width / img.height;
-      const canvasAspect = targetWidth / targetHeight;
-      let sx, sy, sWidth, sHeight;
-
-      if (imgAspect > canvasAspect) {
-        // Image is wider than canvas: scale by height, crop width
-        sHeight = img.height;
-        sWidth = img.height * canvasAspect;
-        sx = (img.width - sWidth) / 2; // Center crop
-        sy = 0;
-      } else {
-        // Image is taller than canvas: scale by width, crop height
-        sWidth = img.width;
-        sHeight = img.width / canvasAspect;
-        sx = 0;
-        sy = (img.height - sHeight) / 2; // Center crop
-      }
-
-      // Draw cropped image to canvas
-      ctx.drawImage(
-        img,
-        sx,
-        sy,
-        sWidth,
-        sHeight,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
-
-      // Convert canvas to base64
-      resolve(canvas.toDataURL("image/jpeg", 0.9)); // 0.9 quality to balance size and quality
-    };
-    img.onerror = () => reject(new Error("Failed to load image"));
-    img.src = imageUrl;
-  });
+function timestamp() {
+  return new Date().toISOString().split("T")[0];
 }
 
-// Helper function to convert blob to base64
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
-// Helper function to remove emojis from name
-function removeEmojis(str) {
-  return str.replace(
-    /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\u24C2|\uD83E[\uDD00-\uDDFF])/g,
-    ""
+// Photo problems are reported but never abort a run: those tags print with an
+// empty photo box instead.
+function reportFailures(failures) {
+  if (!failures.length) return;
+  const names = failures
+    .slice(0, 3)
+    .map(({ user }) => fullNameOf(user) || user.registrationCode)
+    .join(", ");
+  const more = failures.length > 3 ? ` and ${failures.length - 3} more` : "";
+  toast.warning(
+    `${failures.length} tag(s) printed without a photo: ${names}${more}`,
+    { position: "top-right", duration: 8000 }
   );
 }
 
-async function downloadPDF(user) {
+async function downloadSingle(user) {
   isGenerating.value = true;
-  error.value = null;
-
-  const doc = new jsPDF({
-    orientation: "landscape",
-    unit: "mm",
-    format: [148, 105], // A6 size
-  });
-
+  statusMessage.value = "Generating tag...";
   try {
-    // Load background image
-    let bgBase64;
-    try {
-      const bgRes = await fetch(backgroundImage);
-      if (!bgRes.ok) throw new Error("Failed to load background image");
-      const bgBlob = await bgRes.blob();
-      bgBase64 = await blobToBase64(bgBlob);
-    } catch (bgError) {
-      throw new Error("Error loading background image: " + bgError.message);
-    }
+    const background = await loadTagBackground();
+    const { photos, failures } = await preparePhotos([user]);
 
-    // Load and resize user passport photo
-    let passportBase64;
-    try {
-      passportBase64 = await resizeAndCropImage(user.photoUrl, 40, 50); // Target 40x50 mm
-    } catch (photoError) {
-      throw new Error(
-        `Error processing passport photo for ${user.registrationCode}: ${photoError.message}`
-      );
-    }
+    const doc = newSingleDoc();
+    drawTag(doc, user, background, photos.get(user._id));
+    doc.save(`IgniteTag-${user.registrationCode || user._id}.pdf`);
 
-    // Draw the ID card layout
-    doc.addImage(bgBase64, "PNG", 0, 0, 148, 105); // Full background
-    doc.addImage(passportBase64, "JPEG", 5, 47, 40, 50); // Passport photo
+    reportFailures(failures);
+    selectedUser.value = null;
+  } catch (err) {
+    toast.error(`Could not generate tag: ${err.message}`, {
+      position: "top-right",
+      duration: 6000,
+    });
+  } finally {
+    isGenerating.value = false;
+  }
+}
 
-    // Dynamic user text
-    doc.setFont("helvetica", "medium");
-    doc.setFontSize(14);
-    doc.setTextColor(0, 0, 0);
-    doc.text(
-      `${user.title || ""} ${removeEmojis(
-        user.firstName || ""
-      ).trim()} ${removeEmojis(user.surname || "").trim()}`,
-      68,
-      57
+async function downloadSelected() {
+  const users = selectedUsers.value;
+  if (!users.length) return;
+
+  isGenerating.value = true;
+  statusMessage.value = `Preparing photos 0/${users.length}...`;
+  try {
+    const background = await loadTagBackground();
+    const { photos, failures } = await preparePhotos(users, (done, total) => {
+      statusMessage.value = `Preparing photos ${done}/${total}...`;
+    });
+
+    statusMessage.value = `Building ${users.length} tag(s)...`;
+    const doc = buildBatch(users, background, photos);
+    doc.save(`IgniteTags-${users.length}-${timestamp()}.pdf`);
+
+    reportFailures(failures);
+    toast.success(
+      `${users.length} tag(s) downloaded, one per page.`,
+      { position: "top-right", duration: 5000 }
     );
-    doc.setFontSize(12);
-    doc.text(`${user.archdeaconry || "N/A"}`, 88, 76);
-    doc.text(`${user.parish || "N/A"}`, 68, 85);
-    doc.text(`${user.registrationCode || "N/A"}`, 95, 94);
-
-    // Download
-    doc.save(`IDCard-${user.registrationCode || "unknown"}.pdf`);
-    selectedUser.value = null; // Close modal after download
-  } catch (error) {
-    error.value = error.message;
-    console.error("PDF generation failed:", error);
+    clearSelection();
+  } catch (err) {
+    toast.error(`Could not generate tags: ${err.message}`, {
+      position: "top-right",
+      duration: 6000,
+    });
   } finally {
     isGenerating.value = false;
   }
 }
 
-async function downloadBulkPDF() {
-  if (selectedUsers.value.length === 0) return;
-
-  isGenerating.value = true;
-  error.value = null;
-
-  const doc = new jsPDF({
-    orientation: "landscape",
-    unit: "mm",
-    format: [148, 105], // A6 size
-  });
-
-  try {
-    // Load background image once
-    let bgBase64;
-    try {
-      const bgRes = await fetch(backgroundImage);
-      if (!bgRes.ok) throw new Error("Failed to load background image");
-      const bgBlob = await bgRes.blob();
-      bgBase64 = await blobToBase64(bgBlob);
-    } catch (bgError) {
-      throw new Error("Error loading background image: " + bgError.message);
-    }
-
-    // Generate ID card for each selected user
-    for (let index = 0; index < selectedUsers.value.length; index++) {
-      const user = selectedUsers.value[index];
-
-      if (index > 0) {
-        doc.addPage([148, 105], "landscape");
-      }
-
-      // Load and resize user passport photo
-      let passportBase64;
-      try {
-        passportBase64 = await resizeAndCropImage(user.photoUrl, 40, 50); // Target 40x50 mm
-      } catch (photoError) {
-        throw new Error(
-          `Error processing passport photo for ${user.registrationCode}: ${photoError.message}`
-        );
-      }
-
-      // Draw the ID card layout
-      doc.addImage(bgBase64, "PNG", 0, 0, 148, 105); // Full background
-      doc.addImage(passportBase64, "JPEG", 5, 47, 40, 50); // Passport photo
-
-      // Dynamic user text
-      doc.setFont("helvetica", "medium");
-      doc.setFontSize(14);
-      doc.setTextColor(0, 0, 0);
-      doc.text(
-        `${user.title || ""} ${removeEmojis(user.firstName)} ${removeEmojis(
-          user.surname
-        )}`,
-        68,
-        57
-      );
-      doc.setFontSize(12);
-      doc.text(`${user.archdeaconry || "N/A"}`, 88, 76);
-      doc.text(`${user.parish || "N/A"}`, 68, 85);
-      doc.text(`${user.registrationCode || "N/A"}`, 95, 94);
-    }
-
-    // Download
-    doc.save(`IDCards-Bulk-${new Date().toISOString().split("T")[0]}.pdf`);
-    selectedUsers.value = []; // Clear selection after download
-  } catch (error) {
-    error.value = error.message;
-    console.error("Bulk PDF generation failed:", error);
-  } finally {
-    isGenerating.value = false;
-  }
-}
-
-// Watch for changes in participants to update hasMoreData
-watch(participants, (newData) => {
-  hasMoreData.value = newData.length > 0;
-});
-
-// Watch for filter changes to refetch and clear selection
 watch(
   filters,
   () => {
     currentPage.value = 1;
-    selectedUsers.value = []; // Clear selection on filter change
     getParticipants();
   },
   { deep: true }
 );
-
-// Watch for page changes to clear selection
-watch(currentPage, () => {
-  selectedUsers.value = []; // Clear selection on page change
-});
 
 onMounted(() => {
   archdeaconries.value = [
@@ -693,22 +568,23 @@ onMounted(() => {
     "Other Denominations",
   ];
   getParticipants();
+  // Warm the artwork cache so the first preview paints without a flash.
+  loadTagBackground().catch(() => {});
 });
 </script>
 
 <style scoped>
-.loader {
-  border-top-color: #4f46e5; /* Tailwind indigo-600 */
-  animation: spin 1s ease-in-out infinite;
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
-/* Ensure table cells are readable on small screens */
+/* Keep table cells readable on small screens */
 @media (max-width: 640px) {
   table {
     display: block;
@@ -724,17 +600,13 @@ onMounted(() => {
   }
 }
 
-/* Adjust modal for small screens */
-@media (max-width: 640px) {
-  .max-w-md {
-    max-width: 90%;
-  }
-}
-
-/* Improve touch targets for buttons and checkboxes */
+/* Improve touch targets */
 button,
 input[type="checkbox"] {
-  min-height: 40px;
   touch-action: manipulation;
+}
+
+button {
+  min-height: 40px;
 }
 </style>
