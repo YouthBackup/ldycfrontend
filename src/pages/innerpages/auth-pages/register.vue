@@ -36,6 +36,29 @@
             class="w-full m-auto p-6 md:p-10 bg-white dark:bg-slate-800 shadow-xl rounded-3xl transition-all duration-300"
             :class="participants.length ? 'max-w-5xl' : 'max-w-[650px]'"
           >
+            <!-- Info Alert -->
+            <div
+              class="mb-8 flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.8"
+                stroke="currentColor"
+                class="h-5 w-5 shrink-0 mt-0.5 text-amber-500"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                />
+              </svg>
+              <p class="text-sm text-amber-800 dark:text-amber-200">
+                Please note: anyone who registers from <span class="font-semibold">7:00am today</span> will not receive the official conference tag. You can still go ahead and register.
+              </p>
+            </div>
+
             <router-link to="/">
               <img
                 src="../../../assets/images/doylogo.png"
