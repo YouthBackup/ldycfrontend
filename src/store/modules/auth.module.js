@@ -95,8 +95,23 @@ export default {
       return data;
     },
 
+    async registerDirect(_, credentials) {
+      const data = await GlobalService.registerDirect(credentials);
+      return data;
+    },
+
     async verifyPayment(_, credentials) {
       const data = await GlobalService.verifyPayment(credentials);
+      return data;
+    },
+
+    async getPendingPayments() {
+      const data = await GlobalService.getPendingPayments();
+      return data;
+    },
+
+    async reconcilePayments() {
+      const data = await GlobalService.reconcilePayments();
       return data;
     },
   },
