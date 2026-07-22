@@ -1,67 +1,16 @@
 <template>
   <div class="px-4 sm:px-6 lg:px-8 py-6 container mx-auto">
-    <!-- Filters -->
-    <div class="flex flex-wrap justify-start gap-4 mb-6">
-      <!-- User Type Filter -->
-      <div class="w-full xs:w-1/2 sm:w-1/3 md:w-1/4">
-        <label class="block text-sm font-medium text-gray-700 mb-1">User Type</label>
-        <select
-          v-model="filters.userType"
-          class="w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-        >
-          <option value="">
-            All Types
-          </option>
-          <option value="camper">
-            Camper
-          </option>
-          <option value="chaplain">
-            Chaplain
-          </option>
-        </select>
-      </div>
-
-      <!-- Status Filter -->
-      <div class="w-full xs:w-1/2 sm:w-1/3 md:w-1/4">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-        <select
-          v-model="filters.status"
-          class="w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-        >
-          <option value="">
-            All Statuses
-          </option>
-          <option value="registered">
-            Registered
-          </option>
-          <option value="passed">
-            Passed
-          </option>
-          <option value="stopped">
-            Stopped
-          </option>
-        </select>
-      </div>
-
-      <!-- Archdeaconry Filter -->
-      <div class="w-full xs:w-1/2 sm:w-1/3 md:w-1/4">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Archdeaconry</label>
-        <select
-          v-model="filters.archdeaconry"
-          class="w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-        >
-          <option value="">
-            All Archdeaconries
-          </option>
-          <option
-            v-for="arch in archdeaconries"
-            :key="arch"
-            :value="arch"
-          >
-            {{ arch }}
-          </option>
-        </select>
-      </div>
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <h2 class="text-xl font-semibold text-gray-800">
+        Pending Payments
+      </h2>
+      <button
+        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        :disabled="isReconciling"
+        @click="reconcilePayments"
+      >
+        {{ isReconciling ? "Reconciling..." : "Reconcile" }}
+      </button>
     </div>
 
     <!-- Table -->
@@ -72,160 +21,83 @@
             <th
               class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
             >
-              Name
+              Reference
             </th>
             <th
               class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden lg:table-cell"
             >
-              Email
-            </th>
-            <th
-              class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden xl:table-cell"
-            >
-              Phone
-            </th>
-            <th
-              class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden xl:table-cell"
-            >
-              Reg. Code
+              Payer Email
             </th>
             <th
               class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
             >
-              Payment Status
+              Amount
             </th>
             <th
               class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
             >
-              Actions
+              Participants
+            </th>
+            <th
+              class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
+              Status
             </th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
           <tr
-            v-for="user in participants"
-            :key="user._id"
-            class="hover:bg-gray-50 transition-colors duration-150"
+            v-for="payment in payments"
+            :key="payment.reference"
+            class="hover:bg-gray-50 transition-colors duration-150 align-top"
           >
-            <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
-              {{ user.title }} {{ user.firstName }} {{ user.surname }}
+            <td class="px-3 py-3 whitespace-nowrap text-sm font-mono text-gray-900">
+              {{ payment.reference }}
             </td>
             <td
               class="px-3 py-3 whitespace-nowrap text-sm text-gray-600 hidden lg:table-cell"
             >
-              {{ user.email }}
+              {{ payment.email }}
             </td>
-            <td
-              class="px-3 py-3 whitespace-nowrap text-sm text-gray-600 hidden xl:table-cell"
-            >
-              {{ user.phoneNumber }}
+            <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+              {{ formatAmount(payment.amount) }}
             </td>
-            <td
-              class="px-3 py-3 whitespace-nowrap text-sm text-gray-600 hidden xl:table-cell"
-            >
-              {{ user.registrationCode }}
+            <td class="px-3 py-3 text-sm text-gray-600">
+              <ul class="space-y-1">
+                <li
+                  v-for="(participant, index) in payment.participants"
+                  :key="index"
+                  class="whitespace-nowrap"
+                >
+                  {{ participant.firstName }} {{ participant.surname }}
+                  <span class="text-gray-400 capitalize">({{ participant.userType }})</span>
+                </li>
+                <li
+                  v-if="!payment.participants || payment.participants.length === 0"
+                  class="text-gray-400"
+                >
+                  —
+                </li>
+              </ul>
             </td>
             <td class="px-3 py-3 whitespace-nowrap">
               <span
-                :class="{
-                  'bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium capitalize':
-                    user.paymentStatus.toLowerCase() === 'pending',
-                  'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium capitalize':
-                    user.paymentStatus.toLowerCase() !== 'pending',
-                }"
+                class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium capitalize"
               >
-                {{ user.paymentStatus }}
+                {{ payment.status }}
               </span>
             </td>
-            <td class="px-3 py-3 whitespace-nowrap">
-              <button
-                class="bg-green-600 text-white px-2 py-1.5 rounded-md hover:bg-green-700 text-xs font-medium transition-colors duration-200 w-full"
-                @click="openModal(user)"
-              >
-                Confirm Payment
-              </button>
+          </tr>
+          <tr v-if="!isLoading && payments.length === 0">
+            <td
+              colspan="5"
+              class="px-3 py-8 text-center text-sm text-gray-500"
+            >
+              No pending payments.
             </td>
           </tr>
         </tbody>
       </table>
-    </div>
-
-    <!-- Pagination -->
-    <div
-      class="flex flex-col sm:flex-row justify-between items-center mt-6 p-3 bg-white shadow-lg rounded-lg"
-    >
-      <button
-        class="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium w-full xs:w-auto mb-3 sm:mb-0"
-        :disabled="currentPage === 1"
-        @click="updatePage(currentPage - 1)"
-      >
-        Previous
-      </button>
-
-      <div class="flex items-center gap-1 flex-wrap justify-center">
-        <!-- Show first page -->
-        <button
-          v-if="totalPages > 1"
-          class="px-2 py-1 rounded-md text-sm font-medium transition-colors duration-200"
-          :class="
-            currentPage === 1
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          "
-          @click="updatePage(1)"
-        >
-          1
-        </button>
-
-        <!-- Show ellipsis if needed -->
-        <span
-          v-if="currentPage > 4"
-          class="text-gray-500 text-sm"
-        >...</span>
-
-        <!-- Show page numbers around current page -->
-        <button
-          v-for="page in pageRange"
-          :key="page"
-          class="px-2 py-1 rounded-md text-sm font-medium transition-colors duration-200"
-          :class="
-            currentPage === page
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          "
-          @click="updatePage(page)"
-        >
-          {{ page }}
-        </button>
-
-        <!-- Show ellipsis if needed -->
-        <span
-          v-if="currentPage < totalPages - 3"
-          class="text-gray-500 text-sm"
-        >...</span>
-
-        <!-- Show last page -->
-        <button
-          v-if="totalPages > 1 && totalPages !== currentPage"
-          class="px-2 py-1 rounded-md text-sm font-medium transition-colors duration-200"
-          :class="
-            currentPage === totalPages
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          "
-          @click="updatePage(totalPages)"
-        >
-          {{ totalPages }}
-        </button>
-      </div>
-
-      <button
-        class="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium w-full xs:w-auto mt-3 sm:mt-0"
-        :disabled="currentPage === totalPages"
-        @click="updatePage(currentPage + 1)"
-      >
-        Next
-      </button>
     </div>
 
     <!-- Loading Overlay -->
@@ -257,177 +129,75 @@
         <span class="text-lg font-medium text-white">Loading...</span>
       </div>
     </transition>
-
-    <!-- Modal -->
-    <div
-      v-if="selectedUser"
-      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 transition-opacity duration-300 px-4 sm:px-0"
-    >
-      <div
-        class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-md sm:max-w-lg relative transform transition-all duration-300 scale-100"
-      >
-        <button
-          class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors duration-200"
-          aria-label="Close modal"
-          @click="selectedUser = null"
-        >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-        <h3 class="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6">
-          Participant Preview
-        </h3>
-
-        <div class="text-sm text-gray-600 space-y-2 sm:space-y-3 mb-6 sm:mb-8">
-          <p class="text-base sm:text-lg">
-            <strong class="font-medium text-gray-900">Name:</strong>
-            {{ selectedUser.title }} {{ selectedUser.firstName }}
-            {{ selectedUser.surname }}
-          </p>
-          <p class="text-base sm:text-lg">
-            <strong class="font-medium text-gray-900">Email:</strong>
-            {{ selectedUser.email }}
-          </p>
-          <p class="text-base sm:text-lg">
-            <strong class="font-medium text-gray-900">Phone:</strong>
-            {{ selectedUser.phoneNumber }}
-          </p>
-          <p class="text-base sm:text-lg">
-            <strong class="font-medium text-gray-900">Reg Code:</strong>
-            {{ selectedUser.registrationCode }}
-          </p>
-          <p class="text-base sm:text-lg">
-            <strong class="font-medium text-gray-900">Archdeaconry:</strong>
-            {{ selectedUser.archdeaconry }}
-          </p>
-          <p class="text-base sm:text-lg">
-            <strong class="font-medium text-gray-900">Parish:</strong>
-            {{ selectedUser.parish || 'N/A' }}
-          </p>
-        </div>
-        <div class="flex flex-col sm:flex-row items-center gap-3">
-          <button
-            class="w-full bg-white text-black border border-blue-600 hover:text-white px-3 py-2 rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 font-medium"
-            @click="router.push(`/admin/verify/participant/${selectedUser._id}`)"
-          >
-            View Participant
-          </button>
-          <button
-            class="w-full bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 font-medium"
-            @click="confirmPayment(selectedUser._id)"
-          >
-            Confirm Payment
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, watch, ref, computed } from "vue";
-import archdeaconryData from "@/assets/data/archdeaconries.json";
-import useParticipants from "./useParticipants";
+import { onMounted, ref } from "vue";
 import { useStore } from "vuex";
 import { useToast } from "vue-toast-notification";
-import { useRouter } from "vue-router";
 
 const store = useStore();
 const toast = useToast();
-const router = useRouter();
 
-// Composable for participants
-const {
-  participants,
-  isLoading,
-  currentPage,
-  filters,
-  getParticipants,
-  totalPages,
-} = useParticipants();
+const payments = ref([]);
+const isLoading = ref(false);
+const isReconciling = ref(false);
 
-// Load archdeaconries
-const archdeaconries = ref([]);
-const hasMoreData = ref(true);
-const selectedUser = ref(null);
-
-// Pagination control
-function updatePage(page) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
-    getParticipants();
-  }
+// Paystack amounts are stored in kobo — convert to naira for display.
+function formatAmount(amount) {
+  const naira = (Number(amount) || 0) / 100;
+  return `₦${naira.toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
-const pageRange = computed(() => {
-  const range = [];
-  const start = Math.max(2, currentPage.value - 2);
-  const end = Math.min(totalPages.value - 1, currentPage.value + 2);
-  for (let i = start; i <= end; i++) {
-    range.push(i);
-  }
-  return range;
-});
-
-function openModal(user) {
-  selectedUser.value = user;
-}
-
-// Confirm payment handler
-async function confirmPayment(id) {
+async function getPendingPayments() {
   try {
-    await store.dispatch("confirmParticipantPayment", id);
-    toast.success("Payment Verified", {
-      position: "top-right",
-      duration: 5000,
-    });
-    getParticipants();
-    selectedUser.value = null; // Close modal after confirmation
+    isLoading.value = true;
+    const res = await store.dispatch("getPendingPayments");
+    payments.value = res.data.data || res.data || [];
   } catch (error) {
-    console.error("Failed to confirm payment:", error);
     toast.error(
-      error.response?.data?.message || "Failed to confirm payment. Please try again.",
+      error.response?.data?.message || "Something went wrong. Please try again.",
       {
         position: "top-right",
         duration: 5000,
       }
     );
+  } finally {
+    isLoading.value = false;
   }
 }
 
-// Watch for changes in participants to update hasMoreData
-watch(participants, (newData) => {
-  hasMoreData.value = newData.length > 0;
-});
-
-// Watch for filter changes to refetch
-watch(
-  filters,
-  () => {
-    currentPage.value = 1;
-    getParticipants();
-  },
-  { deep: true }
-);
+// Reconcile all pending payments with Paystack, then refresh the list.
+async function reconcilePayments() {
+  try {
+    isReconciling.value = true;
+    await store.dispatch("reconcilePayments");
+    toast.success("Payments reconciled", {
+      position: "top-right",
+      duration: 5000,
+    });
+    await getPendingPayments();
+  } catch (error) {
+    console.error("Failed to reconcile payments:", error);
+    toast.error(
+      error.response?.data?.message ||
+        "Failed to reconcile payments. Please try again.",
+      {
+        position: "top-right",
+        duration: 5000,
+      }
+    );
+  } finally {
+    isReconciling.value = false;
+  }
+}
 
 onMounted(() => {
-  archdeaconries.value = [
-    ...archdeaconryData.map((item) => item.archdeaconry),
-    "Other Denominations",
-  ];
-  getParticipants();
+  getPendingPayments();
 });
 </script>
 
@@ -456,13 +226,6 @@ onMounted(() => {
   td,
   th {
     display: table-cell;
-  }
-}
-
-/* Adjust modal for small screens */
-@media (max-width: 640px) {
-  .max-w-md {
-    max-width: 90%;
   }
 }
 

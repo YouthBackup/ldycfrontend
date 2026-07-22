@@ -52,8 +52,20 @@ class GlobalService {
     return res.data.data;
   }
 
+  async registerDirect(payload) {
+    return await axiosInstance.post("/api/paystack/register-direct", payload);
+  }
+
   async verifyPayment(reference) {
     return await axiosInstance.get(`/api/paystack/verify/${reference}`);
+  }
+
+  async getPendingPayments() {
+    return await axiosInstance.get("/api/paystack/pending");
+  }
+
+  async reconcilePayments() {
+    return await axiosInstance.post("/api/paystack/reconcile");
   }
 }
 

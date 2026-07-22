@@ -153,9 +153,15 @@ const store = useStore();
 // Sidebar menu items
 const allMenuItems = [
   {
-    name: "Confirm Payment",
+    name: "Pending Payment",
     icon: "check-circle",
     route: "/admin/confirmPayment",
+    disabled: false,
+  },
+  {
+    name: "Manual Registration",
+    icon: "user-plus",
+    route: "/admin/manualRegistration",
     disabled: false,
   },
   {
@@ -170,6 +176,7 @@ const allMenuItems = [
     route: "/admin/verify/participant",
     disabled: false,
   },
+
 ];
 
 // User check
@@ -212,6 +219,8 @@ export default {
     getIconPath(icon) {
       const icons = {
         "check-circle": "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+        "user-plus":
+          "M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z",
         printer:
           "M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z",
       };

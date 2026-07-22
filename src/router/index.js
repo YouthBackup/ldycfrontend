@@ -71,6 +71,11 @@ const routes = [
         component: () => import("@/pages/admin/confirmPayment.vue"),
       },
       {
+        path: "/admin/manualRegistration",
+        name: "manualRegistration",
+        component: () => import("@/pages/admin/manualRegistration.vue"),
+      },
+      {
         path: "/admin/printCard",
         name: "printId",
         component: () => import("@/pages/admin/printId.vue"),
